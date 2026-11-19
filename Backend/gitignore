@@ -1,0 +1,51 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+env/
+
+# Django
+db.sqlite3
+*.log
+media/
+staticfiles/
+.env
+
+# VSCode
+.vscode/
+
+# Node.js (si frontend utilise Node.js)
+node_modules/
+package-lock.json
+yarn.lock
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# PyCharm
+.idea/
+
+# Coverage
+htmlcov/
+.coverage
+*.cover
+coverage.xml
+*.lcov
+
+# Docker
+*.log
+*.pid
+*.bak
+.env.*
+
+# Other
+.envrc
+.mypy_cache/
+.pytest_cache/

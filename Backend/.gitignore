@@ -1,0 +1,62 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+
+# Django
+db.sqlite3
+*.log
+media/
+staticfiles/
+.env
+/env
+env
+envvv
+env/
+env3 
+
+env3/
+# VSCode
+.vscode/
+db6.sqlite3
+.db6.sqlite3
+.db5.sqlite3
+.db6.sqlite3
+db6.sqlite
+.db5.sqlite3
+backend/db6.sqlite3
+# Node.js (si frontend utilise Node.js)
+node_modules/
+package-lock.json
+yarn.lock
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# PyCharm
+.idea/
+
+# Coverage
+htmlcov/
+.coverage
+*.cover
+coverage.xml
+*.lcov
+
+# Docker
+*.log
+*.pid
+*.bak
+.env.*
+
+# Other
+.envrc
+.mypy_cache/
+.pytest_cache/

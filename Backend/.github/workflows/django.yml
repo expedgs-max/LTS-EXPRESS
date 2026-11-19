@@ -1,0 +1,180 @@
+name: CI/CD - Test & Deploy to VPS
+
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment on push to main branch
+
+jobs:
+  test:
+    runs-on: self-hosted
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.12.0]
+
+    steps:
+      # Checkout the code
+      - uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+           python-version: ${{ matrix.python-version }}
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Configure PostgreSQL connection (if using existing database)
+     # - name: Create .env file in /home/backendsmahi/actions-runner/_work/Backend/Backend/backend
+
+      - name: Create .env file
+        run: |
+   
+         echo "DEBUG=${{ secrets.DEBUG }}" >  /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "SECRET_KEY=${{ secrets.SECRETKEY }}" >>  /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >>  /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >>  /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:${{ secrets.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}">> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_HOST_PASSWORD_2=${{ secrets.EMAIL_HOST_PASSWORD_2 }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "DEFAULT_FROM_EMAIL_2=${{ secrets.DEFAULT_FROM_EMAIL_2 }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "EMAIL_PORT_2=${{ secrets.EMAIL_PORT_2 }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "NAME=${{ secrets.NAME }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "USER=${{ secrets.USER }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "PASSWORD=${{ secrets.PASSWORD }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "HOST=${{ secrets.HOST }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+         echo "PORT=${{ secrets.PORT }}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+
+      - name: Generate Database Configuration
+        run: |
+         echo "DATABASES = {"> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "    'default': {" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'ENGINE': 'django.db.backends.postgresql'," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'NAME': os.getenv('NAME')," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'USER': os.getenv('USER')," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'PASSWORD': os.getenv('PASSWORD')," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'HOST': os.getenv('HOST')," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "        'PORT': os.getenv('PORT')," >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "    }" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         echo "}" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+
+      - name: Debug generated files
+        run: |
+         cat /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/tawsile_star/database_config.py
+         cat /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/.env
+
+       #  env:
+        #  NAME: ${{secrets.NAME}} 
+         # USER: ${{secrets.USER}} 
+        #  PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
+        #  HOST: ${{secrets.POSTGRES_HOST}} 
+        #  PORT: ${{secrets.POSTGRES_PORT}} 
+        #  DATABASE_URL: "postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:${{ secrets.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}"        
+        #  EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        #  EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        #  EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        #  EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        #  SECRET_KEY: ${{ secrets.SECRETKEY }}
+        #  DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+        #  EMAIL_PORT_2: ${{ secrets.EMAIL_PORT_2 }}
+         # EMAIL_HOST_PASSWORD_2: ${{ secrets.EMAIL_HOST_PASSWORD_2 }}
+         # DEFAULT_FROM_EMAIL_2: ${{ secrets.DEFAULT_FROM_EMAIL_2 }}
+     
+        #run: |
+         # echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> $GITHUB_ENV
+        #  echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+          
+      - name: change directory
+        run: cd /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/
+      # Run migrations
+      - name: Run Migrations
+        run: |
+          python backend/manage.py migrate
+          
+      # Étape 6 : Optionnel - Collecte des fichiers statiques
+      - name: Collect Static Files
+        run: |
+          python backend/manage.py collectstatic --noinput  # Collecte les fichiers statiques
+
+      # Run tests
+      # - name: change directory
+       #  run: cd /home/backendsmahi/actions-runner/_work/Backend/Backend/backend
+      # - name: Run Tests
+      #   run: |
+       #     python backend/manage.py test
+      - name: Create start_daphne.sh file
+        run: |
+
+         echo "#!/bin/bash" > /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "# Activate the virtual environment" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "source /home/backendsmahi/actions-runner/env/bin/activate" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "" >>/home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "# Change to the backend directory" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "cd /home/backendsmahi/actions-runner/backend/Backend/backend" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "# Start the Daphne server" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "daphne -b 0.0.0.0 -p 8000 tawsile_star.asgi:application" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "# Check if the previous command was successful" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "if [ $? -ne 0 ]; then" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo " echo 'Error: Daphne server failed to start.'" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo " exit 1" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "fi" >>/home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+         echo "echo 'Daphne server started successfully.'" >> /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+
+          # Rendre le script exécutable
+          chmod +x /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+
+          # Vérifier le contenu du fichier
+          cat /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh
+
+      - name: Debug directory structure
+        run: |
+          ls -R /home/backendsmahi/actions-runner/_work/Backend/Backend/backend/
+
+      - name: Check if start_daphne.sh exists
+        run: |
+          if [ -f "/home/backendsmahi/actions-runner/_work/Backend/Backend/backend/start_daphne.sh" ]; then
+            echo "File exists."
+          else
+            echo "File does not exist."
+          fi
+ 
+      - name: Restart Daphne Service
+        uses: appleboy/ssh-action@master
+        with:
+           host: ${{ secrets.SERVER_IP }}
+           username: ${{ secrets.SERVER_USERNAME }}
+           key: ${{ secrets.SERVER_PRIVATE_KEY }}
+           port: 22
+           script: |
+             sudo systemctl daemon-reload
+             sudo systemctl restart daphne
+             sudo systemctl status daphne --no-pager
+
+
+
+       #- name: Deploy to Ubuntu Server
+        # uses: appleboy/ssh-action@master
+         #with:
+          #host: ${{ secrets.SERVER_IP }}
+          #username: ${{ secrets.SERVER_USERNAME }}
+          #key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          #port: 22
+          #script: |
+           #cd /home/backendsmahi/actions-runner/_work/Backend/Backend/backend
+           #./start_daphne.sh
+      # - name: Run serveur
+     #    run: |
+      #     python backend/manage.py runserver  0.0.0.0:8000 
+
+ 

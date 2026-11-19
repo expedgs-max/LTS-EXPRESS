@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.printer-head{
+    background-color: rgb(16, 197, 241, 0.5);
+    font-size: 18px;
+    width: 60%;
+    border-radius: 0px 20px 20px 0px;
+    @apply flex gap-5 p-4 ml-4;
+}
+.logo-printer{
+    background: url("/ltc-logo.png") no-repeat center;
+    background-size: contain;
+    width: 250px;
+    height: 120px;
+    @apply p-4;
+}
+
+.table-printer {
+    width: 90%;
+    @apply px-3 mx-auto mt-5 rounded-xl overflow-hidden
+}
+
+.table-printer thead, .table-printer tfoot {
+    background-color: rgb(16, 197, 241, 0.5);
+}
+
+.info{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    padding: 15px 20px;
+    font-size: 14px;
+    @apply flex gap-5 justify-center
+}
+.info p {
+    color: blue;
+    @apply flex gap-1 items-center
+}
+
+.info span{
+  font-size: 10px;
+  color: black;
+}
+
+.sign {
+  margin-bottom: 10px;
+  padding: 30px 80px;
+  @apply grid grid-cols-2 text-lg
+}
+.sign p {
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.manque{
+    color: red;
+}
+
+
+@media print {
+    .header {
+      display: none;
+      margin-top: -40px;
+      padding: 0 20px;
+    }
+  
+    .header:first-of-type {
+      display: block; /* Show only on the first page */
+    }
+  
+    .pagination {
+        display: block;
+        text-align: center;
+        margin-top: 20px; /* Adjust spacing to ensure it's at the bottom of each page */
+        font-size: 12px; /* Optional: Make the pagination smaller */
+      }
+  
+    .page {
+      page-break-inside: avoid; /* Prevent breaking mid-row */
+      page-break-after: always; /* Ensure pagination */
+    }
+  
+    .page:last-of-type {
+      page-break-after: auto; /* No break after the last page */
+    }
+    @page qr-style {
+      size: 148mm 105mm; /* Set page size to landscape */
+      margin: 5mm;
+    }
+
+    .qr-style {
+      page: qr-style;
+      background: url("/imprimer_bg.png") no-repeat center center;
+    background-size: cover; /* Or contain depending on layout */
+    width: 100%; /* A6 landscape width at ~96 DPI */
+    height: 360px; /* Adjusted height depending on layout */
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+    }
+
+  }
+
+  .qr-code{
+    position: absolute;
+    bottom: 71px;
+    right: 60px;
+    border-radius: 12px;
+    background-color: #fff;
+    padding: 5px;
+    /* width: 200px;
+    height: 200px; */
+  }
+
+  .logo-qr {
+    background: url("/logo_VQR.png") no-repeat center;
+    background-size: contain;
+    width: 200px;
+    height: 200px;
+    /* filter: grayscale(); */
+    /* @apply p-4; */
+  }
+
+  .mapouter {
+    position: relative;
+    text-align: right;
+    width: 100%;
+    height: 150px;
+  }
+  .gmap_canvas {
+    overflow: hidden;
+    background: none !important;
+    width: 100%;
+    height: 150px;
+  }
+  .gmap_iframe {
+    height: 150px !important;
+  }
+
+  .splide__pagination {
+    @apply relative flex justify-center gap-3
+  }
+  
+  .splide__pagination li .splide__pagination__page {
+    @apply bg-second transition-all w-3 h-3 duration-300;
+  }
+  
+  .splide__pagination li .is-active {
+    @apply w-6 bg-third rounded-md;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+
+  .leaflet-div-icon,
+  .custom-livreur-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  /* Google Maps: Suppress Ctrl+Scroll overlay and enable seamless interaction */
+  .gm-style-pbc {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }

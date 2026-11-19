@@ -1,0 +1,100 @@
+"use client"
+
+import { toast } from "react-hot-toast"
+import { UpdateUser } from '@/lib/call_action';
+import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+export default function ModifieForm({ user, onsub, refresh }: { user: Users, onsub: (value: null) => void, refresh: () => void }) {
+
+  const [showPass, setShowPass] = useState<boolean>(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget)
+    const formObject = Object.fromEntries(formData.entries())
+
+    if (formObject.phone_number_1) {
+      formObject.phone_number_1 = String(formObject.phone_number_1).replace(/^0+/, '');
+      formObject.phone_number_1 = String(formObject.code) + String(formObject.phone_number_1);
+    }
+
+
+
+    const filteredData = Object.fromEntries(
+      Object.entries(formObject).filter(([, value]) => value !== "")
+    );
+
+    if (filteredData.confirm_password !== filteredData.password) {
+      toast.error('Le mot de passe ne correspond pas.');
+      return;
+    }
+
+    delete filteredData.confirm_password;
+
+    if (Object.keys(filteredData).length === 0) {
+      toast.error('Aucun champ à mettre à jour.');
+      return;
+    }
+
+    const updatedUser = { id: user.id.toString(), ...filteredData };
+
+    const res = await UpdateUser(updatedUser)
+    if (res) {
+      refresh()
+      onsub(null)
+    }
+  }
+
+  return (
+    <div className='fixed z-20 overflow-auto top-20 flex items-start bottom-0 right-0 left-0 md:left-80 p-5 bg-opacity-50 bg-slate-700'>
+      <div className='md:max-w-2xl w-full mx-auto p-5 mt-10 bg-white rounded-lg'>
+        <h1 className='mb-5 text-2xl font-bold text-center'>Modifie profile</h1>
+        <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+          <p>Le nom et le prénom</p>
+          <div className='flex gap-5 md:flex-row flex-col'>
+            <input type='text' name='last_name' className='p-2 w-full border border-slate-300 rounded-md' placeholder='Entre le Nom' defaultValue={user.last_name} />
+            <input type='text' name='first_name' className='p-2 w-full border border-slate-300 rounded-md' placeholder='Entre le prénom' defaultValue={user.first_name} />
+          </div>
+          <p>Le Numéro de Télephone</p>
+          <div className="flex gap-2">
+            <input readOnly name='code' value="+213" className='p-2 border border-slate-300 rounded-md w-1/4' />
+            <input type='text' name='phone_number_1' className='p-2 border border-slate-300 rounded-md w-full' placeholder='Entre le numéro de téléphone' defaultValue={user.phone_number_1.replace(/^\+213/, '')} />
+          </div>
+          <p>Email</p>
+          <input type='email' name='email' className='p-2 border border-slate-300 rounded-md' placeholder='Entre le email' defaultValue={user.email} />
+          <p>Date de naissance</p>
+          <input type="date" name="date_de_naissance" id="date_de_naissance" className='p-3 border border-slate-300 rounded-md' defaultValue={user.date_de_naissance ? new Date(user.date_de_naissance).toISOString().split('T')[0] : ""} />
+          <p>Lieux de naissance</p>
+          <input type="Text" name="lieux" id="lieux" placeholder='Lieux de naissance' className='p-3 border border-slate-300 rounded-md' defaultValue={user.lieux!} />
+          <div className="flex flex-col md:flex-row w-full gap-2">
+            <div className="relative w-full">
+              <p>Le mot de passe</p>
+              <input type={showPass ? "text" : "password"} name="password" className='p-2 border border-slate-300 rounded-md w-full' placeholder='Entre nouvel password' />
+              <span onClick={() => setShowPass(pre => !pre)} className='absolute right-2 bottom-3 text-xl text-gray-500 cursor-pointer'>
+                {showPass ?
+                  <FaEye />
+                  :
+                  <FaEyeSlash />
+                }
+              </span>
+            </div>
+            <div className="relative w-full">
+              <p>Confirmé le mot de passe</p>
+              <input type={showPass ? "text" : "password"} name="confirm_password" className='p-2 border border-slate-300 rounded-md w-full' placeholder='Entre verifé password' />
+              <span onClick={() => setShowPass(pre => !pre)} className='absolute right-2 bottom-3 text-xl text-gray-500 cursor-pointer'>
+                {showPass ?
+                  <FaEye />
+                  :
+                  <FaEyeSlash />
+                }
+              </span>
+            </div>
+          </div>
+          <button className='bg-green-600 disabled:bg-opacity-20 px-4 py-2 text-white rounded-lg font-semibold'>Submite</button>
+        </form>
+      </div>
+    </div>
+  )
+}

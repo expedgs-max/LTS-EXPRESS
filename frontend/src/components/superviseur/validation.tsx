@@ -1,0 +1,209 @@
+"use client"
+
+import Link from 'next/link'
+import React, { useState } from 'react'
+import { FaRegCheckCircle, FaSearch } from 'react-icons/fa'
+import { handleInputChange } from "@/lib/tools/tools"
+import Named, { Wilaya } from '@/lib/tools/named'
+import { MdClose, MdGpsFixed, MdOutlineDisabledByDefault, MdOutlineQrCodeScanner, MdOutlineReport } from 'react-icons/md'
+import ActiveCompte from '../windows/chef_win/active-compte'
+import toast from 'react-hot-toast'
+import { AddReport } from '@/lib/super_action'
+import SuperReport from '../windows/super_win/super_report'
+import Display from '../windows/gestion_win/display'
+import ModifieGeo from '../windows/super_win/modifie_goe'
+import QRcode from '../windows/magasin_win/qrcode'
+import { useSearchLoader } from '../options/useSearchLoader'
+import LoadingFirst from '../loading'
+
+export default function Validation({ users, refresh, utilisateur, wilaya, active }: { users: Partenaire[], refresh: () => void, utilisateur: Users, wilaya: string, active: string }) {
+
+    const { isLoading, handleSearch } = useSearchLoader(['search', 'wilaya', 'is_active']);
+
+    const [user, setUser] = useState<{ id: number, statue: boolean } | null>(null);
+    const [activePartnerId, setActivePartnerId] = useState<number | null>(null);
+    const [show, setShow] = useState<Partenaire | null>(null);
+    const [geo, setGeo] = useState<number | null>(null);
+    const [qrCode, setQrCode] = useState<number | null>(null);
+
+    const handleSubmite = async (id: number, event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const add = formData.get('message') as string;
+
+        if (!add || add.trim() === '') {
+            toast.error('Veuillez entrer un message.'); // Show an error message
+            return; // Stop further execution
+        }
+
+        const res = await AddReport({ id: id, message: add })
+        if (res) {
+            setActivePartnerId(null)
+        }
+    }
+
+    const parteneur = users.map((pre, index) => {
+        return (
+            <tr key={index} className="bg-white border-b text-black hover:bg-gray-50 text-nowrap">
+                <td className="px-4 py-4">
+                    {pre.id}
+                </td>
+                <td className="px-4 py-4">
+                    Group {pre.user.groupe}
+                </td>
+                <td className="px-4 py-4 max-w-24 overflow-hidden text-nowrap">
+                    {pre.user.first_name} {pre.user.last_name}
+                </td>
+                <td className="px-4 py-4">
+                    {pre.user.email}
+                </td>
+                <td className="px-4 py-4">
+                    {pre.user.phone_number_1}
+                </td>
+                <td className="px-4 py-4">
+                    {Named(pre.type_compte?.name)}
+                </td>
+                <td className="px-4 py-4 flex mt-1 gap-2 justify-center">
+                    {utilisateur ?
+                        utilisateur.role === "superviseur" ?
+                            pre.user.is_active ?
+                                <button onClick={() => setUser({ id: pre.user.id, statue: pre.user.is_active })} className='bg-red-700 text-white p-1 rounded-md hover:bg-red-500 flex items-center'>Désactivé <MdOutlineDisabledByDefault /></button> :
+                                <button onClick={() => setUser({ id: pre.user.id, statue: pre.user.is_active })} className='bg-green-700 text-white p-1 rounded-md hover:bg-green-500 flex items-center'>Activé <FaRegCheckCircle /></button>
+                            :
+                            pre.user.is_active ?
+                                <p className='text-green-600 font-bold'>Activé</p>
+                                :
+                                <p className='text-red-600 font-bold'>Désactivé</p>
+                        :
+                        <p>Loading ....</p>
+                    }
+                    {utilisateur && utilisateur.role === "superviseur" ? <button onClick={() => setActivePartnerId(pre.id)} className='bg-red-700 text-white p-1 px-2 rounded-md hover:bg-red-500 inline-flex items-center'><MdOutlineReport /></button> : null}
+                </td>
+                <td className="px-4 py-4 text-right">
+                    <div className='flex gap-1 justify-end'>
+                        {pre.type_compte?.name === "magasin" &&
+                            <>
+                                {utilisateur && utilisateur.role === "superviseur" ? <button onClick={() => setGeo(pre.id)} className='p-1 px-2 rounded-md border-blue-800 border hover:text-white hover:bg-blue-800 inline-flex items-center text-nowrap'><MdGpsFixed /></button> : null}
+                                <button onClick={() => setQrCode(pre.magasin_id ? Number(pre.magasin_id) : (toast.error("n'a pas magasin"), null))} className='p-1 px-2 rounded-md border-blue-800 border hover:text-white hover:bg-blue-800 inline-flex items-center text-nowrap'><MdOutlineQrCodeScanner className='mt-0.5' /></button>
+                            </>
+                        }
+                        <button onClick={() => setShow(pre)} className='p-1 rounded-md border-blue-800 border hover:text-white hover:bg-blue-800 inline-flex items-center text-nowrap'>Détails</button>
+                    </div>
+                </td>
+            </tr>
+        )
+    })
+    return (
+        <div className='py-5 px-5 sm:px-16'>
+            <div className='flex items-center gap-2 px-5 pb-5 text-xs lg:text-xl'>
+                <Link href="/dashboard" className='font-semibold text-third'>Tableau de bord /</Link>
+                <h1 className='font-bold'>Validation</h1>
+            </div>
+            <div className='p-3 pb-20 md:pb-20 bg-white md:p-10 rounded-md shadow-md'>
+                <form onSubmit={handleSearch} className='mb-7 flex flex-col lg:flex-row items-center gap-5'>
+                    <div className='relative'>
+                        <FaSearch className='absolute top-3 text-slate-500' />
+                        <input onChange={handleInputChange} type="text" name="search" placeholder='Recherche par numéro' className='border-b outline-none py-2 pl-7 focus:border-slate-950' />
+                    </div>
+                    <div className="inline-flex bg-gray-100 rounded-lg p-1">
+                        <div className='relative'>
+                            <input type="radio" id="valide" name="is_active" defaultChecked={active === "true"} value="true" className="peer hidden" />
+                            <label
+                                htmlFor="valide"
+                                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-500 bg-transparent rounded-md cursor-pointer transition-all duration-200 ease-in-out hover:text-gray-900 peer-checked:bg-green-400 peer-checked:text-white peer-checked:shadow-sm"
+                            >
+                                Valider
+                            </label>
+                        </div>
+                        <div className='relative'>
+                            <input type="radio" id="noValide" name="is_active" defaultChecked={active === "false"} value="false" className="peer hidden" />
+                            <label
+                                htmlFor="noValide"
+                                className="inline-flex items-center whitespace-nowrap justify-center px-4 py-2 text-sm font-medium text-gray-500 bg-transparent rounded-md cursor-pointer transition-all duration-200 ease-in-out hover:text-gray-900 peer-checked:bg-red-400 peer-checked:text-white peer-checked:shadow-sm"
+                            >
+                                No valider
+                            </label>
+                        </div>
+                    </div>
+                    <select name="wilaya" className='border-b outline-none py-2 pl-7 focus:border-slate-950' defaultValue={wilaya ? Number(wilaya) : undefined} >
+                        <option value="">Sélection Wilaya</option>
+                        {Wilaya.map(pre => {
+                            return (
+                                <option key={pre.id} value={pre.code}>{pre.id} - {pre.name}</option>
+                            )
+                        })}
+                    </select>
+                    <button className='bg-blue-500 font-semibold hover:bg-third text-white p-2 rounded-lg'>Recherche</button>
+                </form>
+                <div className="relative overflow-x-auto shadow-md sm:rounded-lg mb-3">
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-gray-500 uppercase bg-primer">
+                            <tr>
+                                <th className="px-4 py-3">
+                                    ID
+                                </th>
+                                <th className="px-4 py-3">
+                                    Groupe
+                                </th>
+                                <th className="px-4 py-3">
+                                    Nom et Prénom
+                                </th>
+                                <th className="px-4 py-3">
+                                    Email
+                                </th>
+                                <th className="px-4 py-3">
+                                    Télephone
+                                </th>
+                                <th className="px-4 py-3">
+                                    Type de compte
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    Actions
+                                </th>
+                                <th className="px-4 py-3 text-right">
+                                    plus
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className='odd:bg-six even:bg-fifth'>
+                            {parteneur}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {user &&
+                <div>
+                    <button onClick={() => setUser(null)} className='fixed z-50 top-28 right-10 bg-white shadow-md rounded-full text-third p-2 font-bold text-4xl'><MdClose /></button>
+                    <ActiveCompte onClose={setUser} user={user} refresh={refresh} />
+                </div>
+            }
+            {activePartnerId &&
+                <>
+                    <button onClick={() => setActivePartnerId(null)} className='fixed z-50 top-28 right-10 bg-white shadow-md rounded-full text-third p-2 font-bold text-4xl'><MdClose /></button>
+                    <SuperReport onEvent={handleSubmite} id={activePartnerId} />
+                </>
+            }
+            {show &&
+                <>
+                    <button onClick={() => setShow(null)} className='fixed z-50 top-28 right-10 bg-white shadow-md rounded-full text-third p-2 font-bold text-4xl'><MdClose /></button>
+                    <Display document={show} />
+                </>
+            }
+            {geo &&
+                <>
+                    <button onClick={() => setGeo(null)} className='fixed z-50 top-28 right-10 bg-white shadow-md rounded-full text-third p-2 font-bold text-4xl'><MdClose /></button>
+                    <ModifieGeo id={geo} onEvent={setGeo} />
+                </>
+            }
+            {qrCode &&
+                <div>
+                    <button onClick={() => setQrCode(null)} className='fixed z-50 top-28 right-10 bg-white shadow-md rounded-full text-third p-2 font-bold text-4xl'><MdClose /></button>
+                    <QRcode id={qrCode} />
+                </div>
+            }
+            {isLoading &&
+                <LoadingFirst />
+            }
+        </div>
+    )
+}

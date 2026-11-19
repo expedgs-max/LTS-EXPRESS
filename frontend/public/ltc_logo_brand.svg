@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 280" width="100%" height="100%">
+  <defs>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E50914" />
+      <stop offset="50%" stop-color="#B80008" />
+      <stop offset="100%" stop-color="#8A0005" />
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FF1E27" />
+      <stop offset="100%" stop-color="#B80008" />
+    </linearGradient>
+  </defs>
+
+  <!-- LTC Main Logo -->
+  <g>
+    <!-- L Wing / Leaf on top-left -->
+    <path d="M 18,30 C 55,28 95,45 102,82 C 70,70 40,78 18,30 Z" fill="url(#leafGrad)" />
+    
+    <!-- L Body -->
+    <path d="M 62,65 L 102,65 L 102,170 L 190,170 L 190,205 L 62,205 Z" fill="url(#redGrad)" />
+
+    <!-- T Body -->
+    <path d="M 172,65 L 358,65 L 358,102 L 285,102 L 285,205 L 245,205 L 245,102 L 172,102 Z" fill="url(#redGrad)" />
+
+    <!-- C Body -->
+    <path d="M 435,92 C 405,62 355,62 325,92 C 290,127 290,183 325,218 C 360,253 415,248 445,215 L 418,188 C 398,210 360,212 342,192 C 322,172 322,138 342,118 C 362,98 398,98 418,118 Z" fill="url(#redGrad)" />
+  </g>
+
+  <!-- EXPRESS Text -->
+  <text x="250" y="260" 
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+        font-size="44" 
+        font-weight="900" 
+        letter-spacing="18" 
+        text-anchor="middle" 
+        fill="#09090b">
+    EXPRESS
+  </text>
+</svg>
